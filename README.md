@@ -1,2 +1,2 @@
 # Wrokout App
-App to track your workout process
+App to track your workout progress
