@@ -39,6 +39,9 @@ def logout_user(request):
 @login_required(login_url="login")
 def clientPanel(request, *args, **kwargs):
 
+    if request.method == "POST":
+        exercise_name = request[""]
+
     user = User.objects.get(username=request.user.username)
     exercises = Exercise.objects.all()
     workouts = Workout.objects.filter(user=user)
@@ -55,7 +58,8 @@ def clientPanel(request, *args, **kwargs):
         "date": date.today(),
         "exercises": exercises,
         "workouts": workouts,
-        'today_workout': today_workout
+        'today_workout': today_workout,
+        "today_exercises": today_workout.exercises
     }
 
     return render(request, 'client-panel.html', context)
