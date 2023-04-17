@@ -1,17 +1,28 @@
 from django.shortcuts import render, redirect, HttpResponse
+
 from .models import Workout, Exercise
+from .serializers import WorkoutSerializer, ExerciseSerializer, UserSerializer
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.contrib import messages
+
+
+# api
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import status
+
 
 from datetime import date
 
-from django.contrib import messages
 
 def index(request, *args, **kwargs):
-
     return render(request, 'index.html')
+
 
 def register_user(request, *args, **kwargs):
     if request.user.is_authenticated:
@@ -60,6 +71,7 @@ def login_user(request, *args, **kwargs):
 
     return render(request, 'login.html')
 
+
 def logout_user(request):
     logout(request)
     return redirect("/")
@@ -67,11 +79,9 @@ def logout_user(request):
 
 @login_required(login_url="login")
 def clientPanel(request, *args, **kwargs):
-
     user = User.objects.get(username=request.user.username)
     exercises = Exercise.objects.filter(user=user)
     workouts = Workout.objects.filter(user=user)
-
 
     try:
         today_workout = Workout.objects.get(date=date.today(), user=user)
@@ -94,7 +104,7 @@ def clientPanel(request, *args, **kwargs):
                 user=user,
                 name=exercise_name
             )
-        today_workout.exercises.append({"name":exercise_name, "weight":exercise_weight, "amount":exercise_amount})
+        today_workout.exercises.append({"name": exercise_name, "weight": exercise_weight, "amount": exercise_amount})
         today_workout.save()
         return redirect("/client-panel")
 
@@ -107,3 +117,113 @@ def clientPanel(request, *args, **kwargs):
     }
 
     return render(request, 'client-panel.html', context)
+
+
+# api
+class EndpointsView(APIView):
+
+    def get(self, request):
+        data = {
+            "api/": "Endpoints list",
+            "api/token": "Authentication token and refresh token",
+            "api/token/refresh": "Paste refresh token to get new tokens",
+            "api/client-panel/": "All data about logged user"
+        }
+        return Response(data)
+
+class ClientPanel(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        user = request.user
+        exercises = Exercise.objects.filter(user=user)
+        serialized_exercises = ExerciseSerializer(exercises, many=True).data
+
+        try:
+            today_workout = Workout.objects.get(date=date.today(), user=user)
+        except:
+            Workout.objects.create(
+                user=user
+            )
+            workouts = Workout.objects.filter(user=user)
+            today_workout = workouts.get(date=date.today())
+        today_workout = WorkoutSerializer(today_workout, many=False).data
+
+        user = UserSerializer(user, many=False).data
+
+        data = {
+            "profile": user,
+            "exercises": serialized_exercises,
+            "today_workout": today_workout,
+
+        }
+        return Response(data)
+
+    def post(self, request):
+        user = request.user
+
+        try:
+            today_workout = Workout.objects.get(date=date.today(), user=user)
+        except:
+            Workout.objects.create(
+                user=user
+            )
+            workouts = Workout.objects.filter(user=user)
+            today_workout = workouts.get(date=date.today())
+
+        exercise_name = request.POST["exercise_name"]
+        exercise_weight = request.POST["exercise_weight"]
+        exercise_amount = request.POST["exercise_amount"]
+
+        try:
+            Exercise.objects.get(user=user, name=exercise_name)
+        except:
+            Exercise.objects.create(
+                user=user,
+                name=exercise_name
+            )
+        today_workout.exercises.append({"name": exercise_name, "weight": exercise_weight, "amount": exercise_amount})
+        today_workout.save()
+
+        data = {
+            "status" "200"
+            "added": {"name": exercise_name, "weight": exercise_weight, "amount": exercise_amount}
+        }
+
+        return Response(data)
+
+class WorkoutListApiView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        user = request.user
+        workouts = Workout.objects.filter(user=user)
+        serialized_workouts = WorkoutSerializer(workouts, many=True).data
+
+        data = {
+            f"user {user} workouts":serialized_workouts
+        }
+
+        return Response(data)
+class SpecificWorkoutView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        user = request.user
+        date = request.GET.get('date')
+        workout = Workout.objects.get(user=user, date=date)
+        return Response(WorkoutSerializer(workout).data)
+
+
+class LogoutView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
