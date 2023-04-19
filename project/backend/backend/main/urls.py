@@ -3,11 +3,8 @@ from . import views
 from rest_framework_simplejwt import views as jwt_views
 
 urlpatterns = [
-    path('', views.index),
-    path('login/', views.login_user, name="login"),
-    path('client-panel/', views.clientPanel, name="client-panel"),
     path('api/logout/', views.LogoutView.as_view(), name='logout'),
-    path('register/', views.register_user, name='register'),
+    path("api/client-panel/<int:index>", views.ClientPanel.as_view()),
     path("api/client-panel/", views.ClientPanel.as_view()),
     path('api/register/', views.RegisterUserView.as_view()),
     path("api/token/", jwt_views.TokenObtainPairView.as_view(), name="token"),
