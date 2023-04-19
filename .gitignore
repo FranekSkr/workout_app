@@ -131,3 +131,8 @@ requirements.txt
 requirements.txt
 
 .idea
+
+#js
+
+.expo
+node_modules
