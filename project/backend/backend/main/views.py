@@ -19,6 +19,24 @@ from rest_framework import status
 
 from datetime import date
 
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['username'] = user.username
+        # ...
+
+        return token
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
 # api
 class EndpointsView(APIView):
 
@@ -95,7 +113,7 @@ class ClientPanel(APIView):
         return Response(data)
 
     def delete(self, request, index):
-        
+
         user = request.user
 
         try:
