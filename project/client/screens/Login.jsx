@@ -6,63 +6,58 @@ import {
   SafeAreaView,
   TouchableOpacity,
   TextInput,
+  Image
 } from "react-native";
-import React, { useState } from "react";
-import axios from "axios";
-import { UserIcon } from 'react-native-heroicons/outline'
+import React, { useContext, useState } from "react";
+import { UserIcon, LockClosedIcon } from "react-native-heroicons/outline";
 
 import { COLORS } from "../assets/dummy";
 
+import { AuthContext } from "../context/AuthContex";
 
 const Login = ({ navigation }) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+  });
 
-  const submit = async () => {
-    const user = {
-      username: username.toLowerCase(),
-      password: password,
-    };
-    alert(user.username)
-
-    const { data } = await axios.post("http://127.0.0.1:8000/api/token/", user, {
-      headers: { "Content-Type": "application/json" },
-    }).catch(error =>{
-      alert(error)
-    })
-
-    //Initialize the access & refresh token in AsyncStorage.
-    AsyncStorage.clear()
-    AsyncStorage.setItem("access_token", data.access);
-    AsyncStorage.setItem("refresh_token", data.refresh);
-    axios.defaults.headers.common["Authorization"] = `Bearer ${data["access"]}`;
-  }
+  const { login } = useContext(AuthContext);
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.loginTitle}>Login</Text>
-      <View style={styles.inputContainer}>
-        <UserIcon size={24} color={COLORS.lightGrey}/>
-        <TextInput
-        style={styles.input}
-        placeholder="Type a username"
-        placeholderTextColor={COLORS.lightGrey}
-        onChangeText={(username) => setUsername(username)}
+      <Image
+        source={{uri: "https://picsum.photos/200"}}
+        style={styles.icon}
       />
+
+      <Text style={styles.loginTitle}>Zaloguj się do FitNow</Text>
+      <View style={styles.inputContainer}>
+        <UserIcon size={20} color={COLORS.lightGrey} />
+        <TextInput
+          style={styles.input}
+          placeholder="Nazwa użytkownika"
+          placeholderTextColor={COLORS.lightGrey}
+          onChangeText={(username) => setForm(...form, username)}
+        />
       </View>
       <View style={styles.inputContainer}>
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry={true}
-        placeholderTextColor={COLORS.lightGrey}
-        onChangeText={(password) => setPassword(password)}
-      />
+        <LockClosedIcon size={20} color={COLORS.lightGrey} />
+        <TextInput
+          style={styles.input}
+          placeholder="Hasło"
+          secureTextEntry={true}
+          placeholderTextColor={COLORS.lightGrey}
+          onChangeText={(password) => setForm(...form, password)}
+        />
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={submit}>
-        <Text style={styles.buttonText}>Login</Text>
+      <TouchableOpacity style={styles.button} onPress={login}>
+        <Text style={styles.buttonText}>Zaloguj</Text>
       </TouchableOpacity>
+
+      <Text style={{ color: COLORS.blue }}>Nie posiadasz jeszcze konta?</Text>
+      <TouchableOpacity onPress={() => navigation.navigate("Register")} style={styles.button}>
+        <Text style={styles.buttonText}>Zarejestruj się</Text></TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -72,31 +67,46 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     flex: 1,
     paddingHorizontal: 30,
-    paddingVertical: 50
+    paddingVertical: 50,
+    alignItems: "center",
   },
+  icon: { 
+    alignSelf: "center",
+    width: 100,
+    height: 100,
+    marginTop: 50,
+    borderRadius: 20,
+  },
+
   loginTitle: {
     fontSize: 25,
-    fontWeight: '800'
+    fontWeight: "800",
+    marginTop: 30,
+    marginBottom: 20,
   },
   inputContainer: {
-    width: "100%", 
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    width: "100%",
     marginVertical: 15,
     paddingVertical: 7,
     borderBottomColor: COLORS.lightGrey,
     borderBottomWidth: 1,
   },
 
-  input: {  
+  input: {
     fontWeight: "bold",
     fontSize: 16,
     color: COLORS.darkGrey,
+    flex: 1,
   },
   button: {
     backgroundColor: COLORS.blue,
     paddingVertical: 15,
     width: "100%",
     borderRadius: 10,
-    marginTop: 20,
+    marginVertical: 20,
   },
   buttonText: {
     color: COLORS.white,
