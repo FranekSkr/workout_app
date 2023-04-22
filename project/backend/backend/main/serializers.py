@@ -13,8 +13,20 @@ class ExerciseSerializer(ModelSerializer):
         model = Exercise
         fields = ["user", "name"]
 
+
 class UserSerializer(ModelSerializer):
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def validate_email(self,email):
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError("Email already exists")
+        return email
+
+    def create(self, validated_data):
+
+        user = User.objects.create_user(**validated_data)
+        return user

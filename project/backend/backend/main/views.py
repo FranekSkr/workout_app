@@ -170,29 +170,14 @@ class LogoutView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class RegisterUserView(APIView):
+    serializer_class = UserSerializer
+
     def post(self, request):
-        username = request.POST.get('username', False)
-        email = request.POST.get('email', False)
-        password = request.POST.get("password", False)
-        password2 = request.POST.get("password_confirmation", False)
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        user = authenticate(request, username=username, password=password)
-        if user is None:
-            if password == password2:
-                try:
-                    User.objects.get(email=email)
-                    return Response({"error": "Adres email jest już zajęty"})
-                except:
-                    user = User.objects.create_user(
-                        username=username,
-                        email=email,
-                    )
-                    user.set_password(password)
-                    user.save()
-            else:
-                return Response({"error": "Podane hasła różnią się"})
-        else:
-            return Response({"error":"Nazwa, użytkownika jest już zajęta"})
-
-        return Response({"message":f"Pomyślnie zarejestrowano użytkownika {username}"})
