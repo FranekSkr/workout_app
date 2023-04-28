@@ -14,11 +14,16 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      await AsyncStorage.clear();
-      const { data } = await axios.post(`${BASE_URL}/token/`, {
+      let data
+      await axios.post(`${BASE_URL}/token/`, {
         username,
         password,
-      });
+      }).then(res =>{
+        if(res.status === 200){
+          AsyncStorage.clear();
+          data = res.data
+        }}
+      );
 
       axios.defaults.headers.common[
         "Authorization"
@@ -30,41 +35,33 @@ export const AuthProvider = ({ children }) => {
       ]);
       setAccessToken(data.access);
       setRefreshToken(data.refresh);
-
-      
     } catch (err) {
-      Alert.alert("Bład", "Przepraszamy wystąpił jakiś problem");
+      Alert.alert("Bład", "Nie udało się zalogować, sprawdź czy napewno podałeś dobre dane");
       console.error(err);
     }
   };
 
   //logout
-  const logout = async () => {
+    const logout = async () => {
+      checkToken()
 
-    // checkToken()
-   
-    const refreshToken = await AsyncStorage.getItem("refreshToken")   
+      try {
+        const refreshToken = await AsyncStorage.getItem("refreshToken").then(token => token.toString());
+        axios.post(`${BASE_URL}/logout/`,{refreshToken:refreshToken})
+        .then(response => console.log(response.data))
+        .catch(error => console.log(error));
 
-    try {
-      fetch(`${BASE_URL}/logout/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          "refresh_token":  refreshToken,
-        })
-      }).then(res => console.log(res))
 
-      await AsyncStorage.clear();
-      axios.defaults.headers.common["Authorization"] = null;
-      setAccessToken(null);
-      setRefreshToken(null);
-    } catch (err) {
-      Alert.alert("Błąd", "Wylogowanie nie powiodło się");
-      console.error(err);
-    }
-  };
+        
+        await AsyncStorage.clear();
+        axios.defaults.headers.common["Authorization"] = null;
+        setAccessToken(null);
+        setRefreshToken(null);
+      } catch (err) {
+        Alert.alert("Błąd", "Wylogowanie nie powiodło się");
+        console.error(err);
+      }
+    };
 
   const isLoggedIn = async () => {
     try {

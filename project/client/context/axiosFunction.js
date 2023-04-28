@@ -10,7 +10,7 @@ axios.interceptors.response.use(
     if (error.response.status === 401 && !refresh) {
       console.log("expired")
       refresh = true;
-      const response = await axios.post(`${BASE_URL}/token/refresh/`, {
+      const response = await axios.post(`${BASE_URL}/token/refresh`, {
         "refresh": await AsyncStorage.getItem("refreshToken"),
       });
       if (response.status === 200) {
