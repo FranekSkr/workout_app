@@ -1,71 +1,112 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
   Text,
   StyleSheet,
   SafeAreaView,
   TouchableOpacity,
+  TextInput,
+  Image
 } from "react-native";
-import React, { useState } from "react";
-import { TextInput } from "react-native-paper";
+import React, { useContext, useState } from "react";
+import { UserIcon, LockClosedIcon } from "react-native-heroicons/outline";
 
 import { COLORS } from "../assets/dummy";
 
-const Login = () => {
-  const [usernameValue, setUsernameValue] = useState("");
-  const [passwordValue, setPasswordValue] = useState("");
+import { AuthContext } from "../context/AuthContex";
 
-  handleOnPress = () => {
-    alert(usernameValue);
-  };
+const Login = ({ navigation }) => {
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+  });
+
+  const { login } = useContext(AuthContext);
 
   return (
     <SafeAreaView style={styles.container}>
-      <TextInput
-        style={styles.input}
-        mode="underlined"
-        label="Username"
-        placeholder="Type a username"
-        value={usernameValue}
-        onChangeText={(usernameValue) => setUsernameValue(usernameValue)}
+      <Image
+        source={{uri: "https://picsum.photos/200"}}
+        style={styles.icon}
       />
 
-      {/* <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor={COLORS.white}
-        onChangeText={(text) => setPasswordValue(text)}
-      /> */}
+      <Text style={styles.loginTitle}>Zaloguj się do FitNow</Text>
+      <View style={styles.inputContainer}>
+        <UserIcon size={20} color={COLORS.lightGrey} />
+        <TextInput
+          style={styles.input}
+          placeholder="Nazwa użytkownika"
+          placeholderTextColor={COLORS.lightGrey}
+          onChangeText={(username) => setForm(...form, username)}
+        />
+      </View>
+      <View style={styles.inputContainer}>
+        <LockClosedIcon size={20} color={COLORS.lightGrey} />
+        <TextInput
+          style={styles.input}
+          placeholder="Hasło"
+          secureTextEntry={true}
+          placeholderTextColor={COLORS.lightGrey}
+          onChangeText={(password) => setForm(...form, password)}
+        />
+      </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleOnPress}>
-        <Text style={styles.buttonText}>Submit</Text>
+      <TouchableOpacity style={styles.button} onPress={login}>
+        <Text style={styles.buttonText}>Zaloguj</Text>
       </TouchableOpacity>
+
+      <Text style={{ color: COLORS.blue }}>Nie posiadasz jeszcze konta?</Text>
+      <TouchableOpacity onPress={() => navigation.navigate("Register")} style={styles.button}>
+        <Text style={styles.buttonText}>Zarejestruj się</Text></TouchableOpacity>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.lightGrey,
+    backgroundColor: COLORS.white,
     flex: 1,
+    paddingHorizontal: 30,
+    paddingVertical: 50,
     alignItems: "center",
-    justifyContent: "center",
   },
-  input: {
-    backgroundColor: COLORS.blue,
-    width: "70%",
+  icon: { 
+    alignSelf: "center",
+    width: 100,
+    height: 100,
+    marginTop: 50,
+    borderRadius: 20,
+  },
+
+  loginTitle: {
+    fontSize: 25,
+    fontWeight: "800",
+    marginTop: 30,
+    marginBottom: 20,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    width: "100%",
     marginVertical: 15,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingVertical: 7,
+    borderBottomColor: COLORS.lightGrey,
+    borderBottomWidth: 1,
+  },
+
+  input: {
     fontWeight: "bold",
-    fontSize: 17,
-    color: COLORS.white,
+    fontSize: 16,
+    color: COLORS.darkGrey,
+    flex: 1,
   },
   button: {
-    backgroundColor: COLORS.darkBlue,
-    paddingVertical: 20,
-    width: "40%",
-    borderRadius: 20,
-    marginTop: 20,
+    backgroundColor: COLORS.blue,
+    paddingVertical: 15,
+    width: "100%",
+    borderRadius: 10,
+    marginVertical: 20,
   },
   buttonText: {
     color: COLORS.white,
