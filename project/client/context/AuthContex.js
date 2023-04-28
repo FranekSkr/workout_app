@@ -40,16 +40,21 @@ export const AuthProvider = ({ children }) => {
 
   //logout
   const logout = async () => {
+
+    // checkToken()
    
-    const refreshToken = await AsyncStorage.getItem("refreshToken")
-    const accessToken = await AsyncStorage.getItem("accessToken")
+    const refreshToken = await AsyncStorage.getItem("refreshToken")   
+
     try {
-      checkToken()
-      axios.post(`${BASE_URL}/logout/`, {
-        "refresh_token":  refreshToken,
-      }, {"headers": "application/json"});
-      console.log(refreshToken)
-      console.log(accessToken)
+      fetch(`${BASE_URL}/logout/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          "refresh_token":  refreshToken,
+        })
+      }).then(res => console.log(res))
 
       await AsyncStorage.clear();
       axios.defaults.headers.common["Authorization"] = null;

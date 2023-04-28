@@ -3,7 +3,6 @@ import { BASE_URL } from "../utils/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const checkToken = () => {
-console.log("checking Token")
 let refresh = false;
 axios.interceptors.response.use(
   (resp) => resp,
