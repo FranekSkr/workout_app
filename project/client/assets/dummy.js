@@ -7,3 +7,10 @@ export const COLORS = {
     darkBlue: '#2a75ff',
     black: "#000"
 }
+
+export const regex = {
+     emailRegex: /^[\w\.]+@([\w-]+\.)+[\w-]{2,4}$/,
+     usernameRegex:  /^([\w\d\@\.\+\-\_]{4,30})$/,
+     passwordRegex:  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[\w\d\!\@\#\$\%\^\&\*\)\(\+\=\.\<\>\{\}\[\]\:\;\'\"\|\~\`\_\-]{8,50}$/,
+    
+}

@@ -1,43 +1,84 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, {createContext, useState, useEffect} from "react";
+import React, { createContext, useState, useEffect } from "react";
+import axios from "axios";
+import { BASE_URL } from "../utils/config";
+import { Alert } from "react-native";
 
-export const AuthContext = createContext()
+import checkToken from "./axiosFunction";
 
-export const AuthProvider = ({children}) => {
-    const [isLoading, setIsLoading] = useState(false)
-    const [userToken, setUserToken] = useState(null)
+export const AuthContext = createContext();
 
-    const login = () => {
-        setIsLoading(true)
-        setUserToken('fjdfkjmjd');
-        AsyncStorage.setItem('userToken', 'fjdfkjmjd')
-        setIsLoading(false)
+export const AuthProvider = ({ children }) => {
+  const [accessToken, setAccessToken] = useState(null);
+  const [refreshToken, setRefreshToken] = useState(null);
+
+  const login = async (username, password) => {
+    try {
+      await AsyncStorage.clear();
+      const { data } = await axios.post(`${BASE_URL}/token/`, {
+        username,
+        password,
+      });
+
+      axios.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${data["access"]}`;
+
+      await AsyncStorage.multiSet([
+        ["accessToken", JSON.stringify(data.access)],
+        ["refreshToken", JSON.stringify(data.refresh)],
+      ]);
+      setAccessToken(data.access);
+      setRefreshToken(data.refresh);
+
+      
+    } catch (err) {
+      Alert.alert("Bład", "Przepraszamy wystąpił jakiś problem");
+      console.error(err);
     }
+  };
 
-    const logout = () => {
-        setUserToken(true)
-        AsyncStorage.removeItem('userToken')
-        setIsLoading(false)
+  //logout
+  const logout = async () => {
+   
+    const refreshToken = await AsyncStorage.getItem("refreshToken")
+    const accessToken = await AsyncStorage.getItem("accessToken")
+    try {
+      checkToken()
+      axios.post(`${BASE_URL}/logout/`, {
+        "refresh_token":  refreshToken,
+      }, {"headers": "application/json"});
+      console.log(refreshToken)
+      console.log(accessToken)
+
+      await AsyncStorage.clear();
+      axios.defaults.headers.common["Authorization"] = null;
+      setAccessToken(null);
+      setRefreshToken(null);
+    } catch (err) {
+      Alert.alert("Błąd", "Wylogowanie nie powiodło się");
+      console.error(err);
     }
+  };
 
-    const isLoggedIn = async() => {
-        try {
-            setIsLoading(true)
-            let userToken = await AsyncStorage.getItem('userToken')
-            setUserToken(userToken)
-            setIsLoading(false)
-        } catch(err) {
-            Alert.alert("Error", err)
-        }
+  const isLoggedIn = async () => {
+    try {
+      let accessToken = await AsyncStorage.getItem("accessToken");
+      let refreshToken = await AsyncStorage.getItem("refreshToken");
+      accessToken && setAccessToken(accessToken);
+      refreshToken && setRefreshToken(refreshToken);
+    } catch (err) {
+      Alert.alert("Error", err);
     }
+  };
 
-    useEffect(() => {
-        isLoggedIn()
-    }, [])
+  useEffect(() => {
+    isLoggedIn();
+  }, []);
 
-    return (
-        <AuthContext.Provider value={{login, logout, isLoading, userToken}}>
-            {children}
-        </AuthContext.Provider>
-    )
-}
+  return (
+    <AuthContext.Provider value={{ login, logout, accessToken }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};

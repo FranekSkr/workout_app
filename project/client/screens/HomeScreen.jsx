@@ -1,21 +1,24 @@
 import { View, Text, TouchableOpacity, StyleSheet} from 'react-native'
-import React, {useContext} from 'react'
-
-import { AuthContext } from '../context/AuthContex'
+import React from 'react'
 
 import { COLORS } from '../assets/dummy'
 
-const HomeScreen = () => {
+import { Cog6ToothIcon } from "react-native-heroicons/outline";
 
-  const { logout } = useContext(AuthContext);
+const HomeScreen = ({ navigation }) => {
+  
+  const name = "John"
 
   return (
     <View style={styles.container}>
-      <Text>Home Page</Text>
+      <View style={styles.navbar}>
+        <Text style={styles.navbarText}>Hello, {name} 💪</Text>
+        <TouchableOpacity onPress={() =>{ navigation.navigate("Settings")}}>
+        <Cog6ToothIcon size={30} color={COLORS.lightGrey}/>
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity style={styles.button} onPress={logout}>
-        <Text style={styles.buttonText}>Wyloguj się</Text>
-      </TouchableOpacity>
+      
     </View>
   )
 }
@@ -28,18 +31,16 @@ const styles = StyleSheet.create({
     paddingVertical: 50,
     alignItems: "center",
   },
-  button: {
-    backgroundColor: COLORS.blue,
-    paddingVertical: 15,
-    width: "100%",
-    borderRadius: 10,
-    marginVertical: 20,
+  navbar: {
+    width: '100%',
+    height: 70,
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexDirection: "row",
   },
-  buttonText: {
-    color: COLORS.white,
-    textAlign: "center",
-    fontWeight: "800",
-    fontSize: 20,
+  navbarText: {
+    fontSize: 25,
+    fontWeight: "700",
   },
 })
     
