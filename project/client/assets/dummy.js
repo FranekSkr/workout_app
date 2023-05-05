@@ -5,7 +5,8 @@ export const COLORS = {
     white: '#fff',
     lightGrey: '#ccc',
     darkBlue: '#2a75ff',
-    black: "#000"
+    black: "#000",
+    lightBlue: '#ebfaff'
 }
 
 export const regex = {

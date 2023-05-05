@@ -10,11 +10,11 @@ const Drawer = createDrawerNavigator()
 const AppStack = () => {
   return (
     <Drawer.Navigator
-      initialRouteName="Home"
+      initialRouteName="Strona Główna"
       screenOptions={{ headerShown: false }}
     >
-      <Drawer.Screen name="Home" component={HomeScreen} />
-      <Drawer.Screen name="Settings" component={Settings} />
+      <Drawer.Screen name="Strona Główna" component={HomeScreen} />
+      <Drawer.Screen name="Ustawienia" component={Settings} />
     </Drawer.Navigator>
   );
 };

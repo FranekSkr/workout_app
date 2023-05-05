@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import React, { useContext, useState } from "react";
 
-import { COLORS, regex } from "../assets/dummy";
+import { COLORS } from "../assets/dummy";
 
 import { AuthContext } from "../context/AuthContex";
 import Input from "../components/Input";
@@ -15,7 +15,7 @@ const Login = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Image
-        source={{ uri: "https://picsum.photos/200" }}
+        source={require("../assets/logo.png")}
         style={styles.icon}
       />
 
@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
   },
   icon: {
     alignSelf: "center",
-    width: 100,
-    height: 100,
+    width: 150,
+    height: 150,
     borderRadius: 20,
   },
 
