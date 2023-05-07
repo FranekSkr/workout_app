@@ -10,11 +10,22 @@ class Exercise(models.Model):
 
     def __str__(self):
         return self.name
-
-class Workout(models.Model):
-    date = models.DateField(auto_now_add=True)
+    
+class WorkoutSet(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    exercises = models.JSONField(default=[], blank=True)
+    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
+    weight = models.FloatField(blank=False, null=False)
+    reps = models.IntegerField(blank=False, null=False)
+    rest = models.IntegerField(blank=True, null=True)
+    date = models.DateField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.exercise.name
+    
+class WorkoutPlan(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, unique=True)
+    weekday = models.IntegerField(blank=False, null=False, unique=True)
+    exerices = models.CharField(max_length=100, blank=False, null=False,unique=True)
 
     def __str__(self):
-        return f"{self.user}'s workout - {self.date}"
+        return f"{self.user}'s workout plan"
