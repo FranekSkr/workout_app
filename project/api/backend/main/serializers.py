@@ -1,12 +1,8 @@
 from rest_framework.serializers import ModelSerializer
-from .models import Exercise, Workout
+from .models import Exercise,  WorkoutPlan, WorkoutSet
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-class WorkoutSerializer(ModelSerializer):
-    class Meta:
-        model = Workout
-        fields = ["date", "user", "exercises"]
 
 class ExerciseSerializer(ModelSerializer):
     class Meta:
@@ -30,3 +26,22 @@ class UserSerializer(ModelSerializer):
 
         user = User.objects.create_user(**validated_data)
         return user
+    
+
+class WorkoutPlanSerializer(ModelSerializer):
+
+    class Meta:
+        model = WorkoutPlan
+        fields = "__all__"
+
+
+class WorkoutSetSerializer(ModelSerializer):
+
+    class Meta:
+        model = WorkoutSet
+        fields = ['user', 'exercise', 'weight', 'reps', 'date']
+        # write_only_fields = ['user']
+
+    def create(self, validated_data):
+        return super().create(validated_data)
+    

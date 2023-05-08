@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse
 
-from .models import Workout, Exercise
-from .serializers import WorkoutSerializer, ExerciseSerializer, UserSerializer
+from .models import Exercise, WorkoutSet, WorkoutPlan
+from .serializers import  ExerciseSerializer, UserSerializer, WorkoutSetSerializer, WorkoutPlanSerializer
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
@@ -59,15 +59,13 @@ class ClientPanel(APIView):
         exercises = Exercise.objects.filter(user=user)
         serialized_exercises = ExerciseSerializer(exercises, many=True).data
 
-        try:
-            today_workout = Workout.objects.get(date=date.today(), user=user)
-        except:
-            Workout.objects.create(
-                user=user
-            )
-            workouts = Workout.objects.filter(user=user)
-            today_workout = workouts.get(date=date.today())
-        today_workout = WorkoutSerializer(today_workout, many=False).data
+        today_workout = WorkoutSet.objects.filter(user=user, date=date.today())
+        if today_workout:
+            today_workout = WorkoutSetSerializer(today_workout, many=True).data
+        else:
+            return Response({"status": "200", "message": "No workout today"})
+        
+
 
         user = UserSerializer(user, many=False).data
 
@@ -75,85 +73,58 @@ class ClientPanel(APIView):
             "profile": user,
             "exercises": serialized_exercises,
             "today_workout": today_workout,
-
         }
         return Response(data)
 
     def post(self, request):
         user = request.user
-
+        exercise_name = request.POST.get("name", False)
+        exercise_weight = request.POST.get("weight", False)
+        exercise_reps = request.POST.get("reps", False)
+        exercise_rest = request.POST.get("rest", 0)
         try:
-            today_workout = Workout.objects.get(date=date.today(), user=user)
+            exercise = Exercise.objects.get(name=exercise_name, user=user)
         except:
-            Workout.objects.create(
+            exercise = Exercise.objects.create(
+                name=exercise_name,
                 user=user
             )
-            workouts = Workout.objects.filter(user=user)
-            today_workout = workouts.get(date=date.today())
-
-        exercise_name = request.POST.get("exercise_name", False)
-        exercise_weight = request.POST.get("exercise_weight", False)
-        exercise_amount = request.POST.get("exercise_amount", False)
-
-        try:
-            Exercise.objects.get(user=user, name=exercise_name)
-        except:
-            Exercise.objects.create(
-                user=user,
-                name=exercise_name
-            )
-        today_workout.exercises.append({"name": exercise_name, "weight": exercise_weight, "amount": exercise_amount})
-        today_workout.save()
-
+            exercise = Exercise.objects.get(name=exercise_name, user=user)
         data = {
-            "status": "200",
-            "added": {"name": exercise_name, "weight": exercise_weight, "amount": exercise_amount}
+            "user": user.pk,
+            "exercise": exercise.pk,
+            "weight": exercise_weight,
+            "reps": exercise_reps,
+            "rest": exercise_rest,
         }
+        serializer = WorkoutSetSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors)
 
-        return Response(data)
 
     def delete(self, request, index):
 
-        user = request.user
+        workout_set = WorkoutSet.objects.get(pk=index, user=request.user) or None
+        if workout_set is not None:
+            workout_set.delete()
 
-        try:
-            today_workout = Workout.objects.get(date=date.today(), user=user)
-        except:
-            Workout.objects.create(
-                user=user
-            )
-            workouts = Workout.objects.filter(user=user)
-            today_workout = workouts.get(date=date.today())
-        today_workout.exercises.pop(index)
-        today_workout.save()
+            return Response({"message": "usunięto ćwiczenie"})
+        
 
-        return Response({"message": "usunięto ćwiczenie"})
-
-class WorkoutListApiView(APIView):
+        return Response({"status": "400", "message": "nie ma takiego ćwiczenia"})
+    
+class GetExerciseView(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request):
-        user = request.user
-        workouts = Workout.objects.filter(user=user)
-        serialized_workouts = WorkoutSerializer(workouts, many=True).data
+    def get(self, request, index):
+        
+        exercises = Exercise.objects.filter(pk=index)
+        serialized_exercises = ExerciseSerializer(exercises, many=True).data
 
-        data = {
-            f"user {user} workouts":serialized_workouts
-        }
-        date = request.GET.get("date") or None
-        if date is not None:
-            workout = Workout.objects.get(user=user, date=date)
-            return Response(WorkoutSerializer(workout).data)
-
-        return Response(data)
-class SpecificWorkoutView(APIView):
-    permission_classes = (IsAuthenticated,)
-
-    def get(self, request):
-        user = request.user
-        date = request.GET.get('date')
-        workout = Workout.objects.get(user=user, date=date)
-        return Response(WorkoutSerializer(workout).data)
+        return Response(serialized_exercises)    
 
 
 class LogoutView(APIView):
