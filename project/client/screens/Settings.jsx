@@ -1,43 +1,45 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import React, {useContext} from "react";
+import React, { useContext } from "react";
 import GetBackNavbar from "../components/GetBackNavbar";
 
-import { AuthContext } from '../context/AuthContex'
+import { AuthContext } from "../context/AuthContex";
 
 import { ArrowLeftOnRectangleIcon } from "react-native-heroicons/outline";
 import { COLORS } from "../assets/dummy";
 import useAxios from "../hooks/useAxios";
 import { version } from "../package.json";
 
-
 const Settings = ({ navigation }) => {
-
   const { logout } = useContext(AuthContext);
 
-  const api = useAxios()
+  const api = useAxios();
 
-  const Logout = async() => {
-    const response = await api.post("/logout/")
-    if(response.status === 205  || response.status === 200) {
-      logout()
+  const Logout = async () => {
+    const response = await api.post("/logout/");
+    if (response.status === 205 || response.status === 200) {
+      await AsyncStorage.clear();
+      axios.defaults.headers.common["Authorization"] = null;
+      setAuthTokens(null);
+      setUser(null);
     }
-  }
-  
+  };
+
   return (
     <>
-    <GetBackNavbar navigation={navigation} screenName="Strona Główna" label="Ustawienia"/>
-    <View style={styles.container}>
-      
+      <GetBackNavbar
+        navigation={navigation}
+        screenName="Strona Główna"
+        label="Ustawienia"
+      />
+      <View style={styles.container}>
+        <TouchableOpacity style={styles.button} onPress={Logout}>
+          <ArrowLeftOnRectangleIcon color={COLORS.white} size={30} />
+          <Text style={styles.buttonText}>Wyloguj się</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={Logout}>
-        <ArrowLeftOnRectangleIcon color={COLORS.white} size={30}/>
-        <Text style={styles.buttonText}>Wyloguj się</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.version}>v. {version}</Text>
-    </View>
+        <Text style={styles.version}>v. {version}</Text>
+      </View>
     </>
-    
   );
 };
 
@@ -56,10 +58,10 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 10,
     marginVertical: 20,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 10
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 10,
   },
   buttonText: {
     color: COLORS.white,
@@ -69,11 +71,11 @@ const styles = StyleSheet.create({
   },
   version: {
     fontSize: 14,
-    position: 'absolute',
+    position: "absolute",
     right: 15,
     bottom: 10,
-    color: COLORS.lightGrey
-  }
+    color: COLORS.lightGrey,
+  },
 });
 
 export default Settings;

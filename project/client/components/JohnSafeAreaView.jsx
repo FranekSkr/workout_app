@@ -3,7 +3,7 @@ import React from "react";
 
 import { COLORS } from "../assets/dummy";
 
-const JohnSafeAreaView = () => {
+const JohnSafeAreaView = ({props}) => {
   return (
     <View
       style={{
@@ -13,7 +13,9 @@ const JohnSafeAreaView = () => {
         paddingVertical: 50,
         alignItems: "center",
       }}
-    ></View>
+    >
+      {props}
+    </View>
   );
 };
 

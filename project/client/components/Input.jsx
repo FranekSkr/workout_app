@@ -28,7 +28,7 @@ const Input = ({ label, type, value, setValue, checkIsValid }) => {
           marginVertical: 15,
           paddingVertical: 7,
           borderBottomColor:
-          checkIsValid() === undefined ? COLORS.lightGrey : value === "" ? COLORS.lightGrey : checkIsValid() ? "green" : "red",
+          value === "" ? COLORS.lightGrey : checkIsValid() === undefined ? COLORS.blue : checkIsValid() ? "green" : "red",
           borderBottomWidth: 1,
         }}
       >
@@ -36,9 +36,9 @@ const Input = ({ label, type, value, setValue, checkIsValid }) => {
           <EnvelopeIcon size={20} color={COLORS.lightGrey} />
         ) : type === "password" ? (
           <LockClosedIcon size={20} color={COLORS.lightGrey} />
-        ) : (
+        ) : type === "username" ? (
           <UserIcon size={20} color={COLORS.lightGrey} />
-        )}
+        ) : null}
         <TextInput
           style={styles.input}
           placeholder={label}
