@@ -5,9 +5,9 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContex";
-
+import Exercise from "../components/Exercise";
 import { COLORS } from "../assets/dummy";
 import {
   Cog6ToothIcon,
@@ -16,27 +16,26 @@ import {
   TrashIcon,
   PencilSquareIcon,
 } from "react-native-heroicons/outline";
-
-import { useSwipe } from "../hooks/useSwipe";
+import { BASE_URL } from "../utils/config";
 
 const HomeScreen = ({ navigation }) => {
   const { user } = useContext(AuthContext);
-  const training = {
-    name: "Bench Press",
-    weight: 50,
-    reps: 10,
+  const [training, setTraining] = useState([]);
+
+  const apiCall = async () => {
+    const response = await fetch(`${BASE_URL}/client-panel/`);
+    if (!response.ok || response.status === 200) {
+      return null;
+    } else {
+      const data = await response.json();
+      console.log(data);
+      setTraining(data);
+    }
   };
-  const [showSideOptions, setShowSideOptions] = useState(false);
-  const [showExercisePopup, setShowExercisePopup] = useState(false)
-  const { onTouchStart, onTouchEnd } = useSwipe(onSwipeLeft, onSwipeRight, 2);
 
-  function onSwipeLeft() {
-    setShowSideOptions(false);
-  }
-
-  function onSwipeRight() {
-    setShowSideOptions(true);
-  }
+  useEffect(() => {
+    apiCall();
+  }, [training]);
 
   return (
     <View style={styles.container}>
@@ -53,9 +52,12 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles.main}>
         <View style={styles.todayTrainingContainer}>
           <Text style={styles.todayTraining}>Dzisiejszy Trening</Text>
-          <TouchableOpacity style={styles.plusContainer} onPress={() => {
-            navigation.navigate("Dodaj Ćwiczenie");
-          }}>
+          <TouchableOpacity
+            style={styles.plusContainer}
+            onPress={() => {
+              navigation.navigate("Dodaj Ćwiczenie");
+            }}
+          >
             <PlusIcon size={35} color={COLORS.white} />
           </TouchableOpacity>
         </View>
@@ -71,35 +73,16 @@ const HomeScreen = ({ navigation }) => {
               Powtórzenia
             </Text>
           </View>
+          {training.map((item, index) => {
+            const training = {
+              weight: item.weight,
+              reps: item.reps,
+              name: item.name,
+              rest: item.rest ? item.rest : null,
+            };
 
-          <ScrollView onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-            <View style={styles.gridItem}>
-              <Text style={styles.flexTwo}>{training.name}</Text>
-              {!showSideOptions ? (
-                <>
-                  <Text style={styles.flexOne}>{training.weight}</Text>
-                  <Text style={styles.flexThree}>{training.reps}</Text>
-                </>
-              ) : (
-                <>
-                  <TouchableOpacity style={{ flex: 1.5 }}>
-                    <PencilSquareIcon
-                      color="blue"
-                      size={25}
-                      style={{ alignSelf: "center" }}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={{ flex: 1.75 }}>
-                    <TrashIcon
-                      color="red"
-                      size={25}
-                      style={{ alignSelf: "center" }}
-                    />
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
-          </ScrollView>
+            return <Exercise training={training} key={index} />;
+          })}
         </View>
       </View>
     </View>
