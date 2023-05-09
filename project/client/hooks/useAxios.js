@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useContext } from "react";
-import { AuthContext } from "../context/AuthContex"
+import { AuthContext } from "../context/AuthContex";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import dayjs from "dayjs";
 import jwt_decode from "jwt-decode";
@@ -20,16 +20,33 @@ const useAxios = () => {
 
     if (!isExpired) return req;
 
-    const response = await axios.post(`${BASE_URL}/token/refresh`, {
-      refresh: authTokens.refresh,
+    // const response = await axios
+    //   .post(`${BASE_URL}/token/refresh`, {
+    //     refresh: authTokens.refresh,
+    //   })
+    //   .catch(async(err) => {
+    //     if (err.response.status === 401) {
+    //       console.log(err.response.status)
+    //     }
+    //   });
+
+    const response = await fetch(`${BASE_URL}/token/refresh`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        refresh: authTokens.refresh,
+      }),
     });
 
-    await AsyncStorage.setItem("authTokens", JSON.stringify(response.data))
+    const data = await response.json();
+    await AsyncStorage.setItem("authTokens", JSON.stringify(data.data));
 
-    setAuthTokens(response.data)   
-    setUser(jwt_decode(response.data.access))
+    setAuthTokens(data.data);
+    setUser(jwt_decode(data.data.access));
 
-    req.headers.Authorization = `Bearer ${response.data.access}`;
+    req.headers.Authorization = `Bearer ${data.data.access}`;
     return req;
   });
 

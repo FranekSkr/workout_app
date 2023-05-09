@@ -21,9 +21,9 @@ const GetBackNavbar = ({ navigation, screenName, label }) => {
       }}
     >
       <TouchableOpacity onPress={() => navigation.navigate(screenName)} style={{zIndex: 2}}>
-        <ChevronLeftIcon size={40} color={COLORS.lightGrey}/>
-      </TouchableOpacity>
-      {label && <Text style={{flex: 1, textAlign: "center", fontSize: 25, fontWeight: "bold", marginLeft: -40}}>{label}</Text>}
+        <ChevronLeftIcon size={30} color={COLORS.lightGrey}/>
+      </TouchableOpacity>   
+      {label && <Text style={{flex: 1, textAlign: "center", fontSize: 20, fontWeight: 500, marginLeft: -40}}>{label}</Text>}
     </View>
   );
 };

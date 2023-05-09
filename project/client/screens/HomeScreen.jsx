@@ -1,4 +1,10 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
 import React, { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContex";
 
@@ -8,7 +14,7 @@ import {
   PlusIcon,
   ArrowPathIcon,
   TrashIcon,
-  PencilSquareIcon
+  PencilSquareIcon,
 } from "react-native-heroicons/outline";
 
 import { useSwipe } from "../hooks/useSwipe";
@@ -20,18 +26,17 @@ const HomeScreen = ({ navigation }) => {
     weight: 50,
     reps: 10,
   };
-  const [showSideOptions, setShowSideOptions] = useState(false)
-  const { onTouchStart, onTouchEnd } = useSwipe(onSwipeLeft, onSwipeRight, 6)
+  const [showSideOptions, setShowSideOptions] = useState(false);
+  const [showExercisePopup, setShowExercisePopup] = useState(false)
+  const { onTouchStart, onTouchEnd } = useSwipe(onSwipeLeft, onSwipeRight, 2);
 
-  function onSwipeLeft(){
-    console.log('SWIPE_LEFT')
-    setShowSideOptions(false)
-}
+  function onSwipeLeft() {
+    setShowSideOptions(false);
+  }
 
-function onSwipeRight(){
-    console.log('SWIPE_RIGHT')
-    setShowSideOptions(true)
-}
+  function onSwipeRight() {
+    setShowSideOptions(true);
+  }
 
   return (
     <View style={styles.container}>
@@ -48,7 +53,9 @@ function onSwipeRight(){
       <View style={styles.main}>
         <View style={styles.todayTrainingContainer}>
           <Text style={styles.todayTraining}>Dzisiejszy Trening</Text>
-          <TouchableOpacity style={styles.plusContainer}>
+          <TouchableOpacity style={styles.plusContainer} onPress={() => {
+            navigation.navigate("Dodaj Ćwiczenie");
+          }}>
             <PlusIcon size={35} color={COLORS.white} />
           </TouchableOpacity>
         </View>
@@ -64,25 +71,36 @@ function onSwipeRight(){
               Powtórzenia
             </Text>
           </View>
-          <View style={styles.gridItem}>
-            <Text style={styles.flexTwo}>{training.name}</Text>
-            <Text style={styles.flexOne}>{training.weight}</Text>
-            <Text style={styles.flexThree}>{training.reps}</Text>
-          </View>
-          <View style={styles.gridItem}>
-            <Text style={styles.flexTwo}>{training.name}</Text>
-            <TouchableOpacity style={{ flex: 1.5 }}>
-              <PencilSquareIcon color="blue" size={25} style={{alignSelf: "center"}} />
-            </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1.75 }}>
-              <TrashIcon color="red" size={25} style={{alignSelf: "center"}} />
-            </TouchableOpacity>
-          </View>
+
+          <ScrollView onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+            <View style={styles.gridItem}>
+              <Text style={styles.flexTwo}>{training.name}</Text>
+              {!showSideOptions ? (
+                <>
+                  <Text style={styles.flexOne}>{training.weight}</Text>
+                  <Text style={styles.flexThree}>{training.reps}</Text>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity style={{ flex: 1.5 }}>
+                    <PencilSquareIcon
+                      color="blue"
+                      size={25}
+                      style={{ alignSelf: "center" }}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={{ flex: 1.75 }}>
+                    <TrashIcon
+                      color="red"
+                      size={25}
+                      style={{ alignSelf: "center" }}
+                    />
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </ScrollView>
         </View>
-        <ScrollView onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-          <Text style={{padding: 20, backgroundColor: 'green', width: '50%', alignSelf: 'center'}}>jaja</Text>
-        </ScrollView>
-        {showSideOptions && <Text>działa</Text>}
       </View>
     </View>
   );
