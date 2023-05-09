@@ -23,6 +23,10 @@ from datetime import date
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+def docs(request):
+    return render(request, "docs.html")
+
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -70,18 +74,21 @@ class ClientPanel(APIView):
         user = UserSerializer(user, many=False).data
 
         data = {
-            "profile": user,
-            "exercises": serialized_exercises,
             "today_workout": today_workout,
         }
         return Response(data)
 
     def post(self, request):
         user = request.user
-        exercise_name = request.POST.get("name", False)
-        exercise_weight = request.POST.get("weight", False)
-        exercise_reps = request.POST.get("reps", False)
+        exercise_name = request.POST.get("name", None)
+        exercise_weight = request.POST.get("weight")
+        exercise_reps = request.POST.get("reps")
         exercise_rest = request.POST.get("rest", 0)
+        
+        if exercise_name is None:
+            return Response({"status": "400", "message": "provide exercise name"})
+        if exercise_weight is None:
+            return Response({"status": "400", "message": "provide exercise weight"})
         try:
             exercise = Exercise.objects.get(name=exercise_name, user=user)
         except:
@@ -107,11 +114,11 @@ class ClientPanel(APIView):
 
     def delete(self, request, index):
 
-        workout_set = WorkoutSet.objects.get(pk=index, user=request.user) or None
+        workout_set = WorkoutSet.objects.get(pk=index, user =request.user) or None
         if workout_set is not None:
-            workout_set.delete()
-
-            return Response({"message": "usunięto ćwiczenie"})
+            
+                workout_set.delete()
+                return Response({"message": "usunięto ćwiczenie"})
         
 
         return Response({"status": "400", "message": "nie ma takiego ćwiczenia"})
