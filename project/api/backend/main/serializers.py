@@ -39,7 +39,8 @@ class WorkoutSetSerializer(ModelSerializer):
 
     class Meta:
         model = WorkoutSet
-        fields = ['user', 'exercise', 'weight', 'reps', 'date']
+        fields = ['pk', 'user', 'exercise', 'weight', 'reps', 'date']
+        read_only = ['pk']
         # write_only_fields = ['user']
 
     def create(self, validated_data):
