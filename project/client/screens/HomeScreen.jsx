@@ -26,7 +26,7 @@ const HomeScreen = ({ navigation }) => {
     const response = await fetch(`${BASE_URL}/client-panel/`, {
 headers: {
  "Content-Type": "application/json",
-"Authorization" = `Bearer ${authTokens.access}`;
+"Authorization": `Bearer ${authTokens.access}`;
 
 }
 );
