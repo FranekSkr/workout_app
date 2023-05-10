@@ -19,11 +19,17 @@ import {
 import { BASE_URL } from "../utils/config";
 
 const HomeScreen = ({ navigation }) => {
-  const { user } = useContext(AuthContext);
+  const { user, authTokens } = useContext(AuthContext);
   const [training, setTraining] = useState([]);
 
   const apiCall = async () => {
-    const response = await fetch(`${BASE_URL}/client-panel/`);
+    const response = await fetch(`${BASE_URL}/client-panel/`, {
+headers: {
+ "Content-Type": "application/json",
+"Authorization" = `Bearer ${authTokens.access}`;
+
+}
+);
     if (!response.ok || response.status === 200) {
       return null;
     } else {
