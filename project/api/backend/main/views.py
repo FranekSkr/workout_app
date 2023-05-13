@@ -118,10 +118,46 @@ class ClientPanel(APIView):
         if workout_set is not None:
             
                 workout_set.delete()
-                return Response({"message": "usunięto ćwiczenie"})
+                return Response({"message": "exercise deleted"})
         
 
-        return Response({"status": "400", "message": "nie ma takiego ćwiczenia"})
+        return Response({"status": "400", "message": "not found"})
+    
+    def put(self, request, index):
+        user = request.user
+        exercise_name = request.POST.get("name", None)
+        exercise_weight = request.POST.get("weight")
+        exercise_reps = request.POST.get("reps")
+        exercise_rest = request.POST.get("rest", 0)
+        updated_workout = WorkoutSet.objects.get(pk=index)
+        if updated_workout and updated_workout.user==request.user:
+        
+            if exercise_name is None:
+                return Response({"status": "400", "message": "provide exercise name"})
+            if exercise_weight is None:
+                return Response({"status": "400", "message": "provide exercise weight"})
+            try:
+                exercise = Exercise.objects.get(name=exercise_name, user=user)
+            except:
+                exercise = Exercise.objects.create(
+                    name=exercise_name,
+                    user=user
+                )
+                exercise = Exercise.objects.get(name=exercise_name, user=user)
+            data = {
+                "user": user.pk,
+                "exercise": exercise.pk,
+                "weight": exercise_weight,
+                "reps": exercise_reps,
+                "rest": exercise_rest,
+            }
+            serializer = WorkoutSetSerializer(updated_workout,data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors)
+    
     
 class GetExerciseView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -129,9 +165,11 @@ class GetExerciseView(APIView):
     def get(self, request, index):
         
         exercises = Exercise.objects.filter(pk=index)
-        serialized_exercises = ExerciseSerializer(exercises, many=True).data
-
-        return Response(serialized_exercises)    
+        if exercises:
+            serialized_exercises = ExerciseSerializer(exercises, many=True).data
+            return Response(serialized_exercises)    
+        else:
+            return Response({"status": "400", "message": "exercise not found"})
 
 
 class LogoutView(APIView):
